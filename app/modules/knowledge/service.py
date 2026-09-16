@@ -2,6 +2,7 @@ from app.modules.knowledge.loader import load_markdown_documents
 from app.modules.knowledge.splitter import split_documents
 from app.modules.knowledge.vector_store import get_vector_store
 from app.modules.knowledge.retriever import get_relevant_documents
+from app.modules.knowledge.ids import generate_chunk_id
 
 
 def test_document_processing():
@@ -29,25 +30,44 @@ def test_document_processing():
 
 
 def ingest_knowledge():
-    # 1. Load documents
     documents = load_markdown_documents()
-
-    # 2. Split documents into chunks
     chunks = split_documents(documents)
 
     if not chunks:
         return {
             "success": False,
             "message": "No knowledge documents found.",
-            "documents_loaded": len(documents),
+            "documents_loaded": 0,
             "chunks_created": 0,
         }
 
-    # 3. Get Qdrant vector store
     vector_store = get_vector_store()
 
-    # 4. Generate embeddings and store in Qdrant
-    vector_store.add_documents(chunks)
+    ids = []
+
+    source_chunk_counters = {}
+
+    for chunk in chunks:
+        source = chunk.metadata.get("source", "")
+
+        chunk_index = source_chunk_counters.get(source, 0)
+        source_chunk_counters[source] = chunk_index + 1
+
+        chunk_id = generate_chunk_id(
+            source=source,
+            content=chunk.page_content,
+            chunk_index=chunk_index,
+        )
+
+        chunk.metadata["chunk_index"] = chunk_index
+        chunk.metadata["chunk_id"] = chunk_id
+
+        ids.append(chunk_id)
+
+    vector_store.add_documents(
+        documents=chunks,
+        ids=ids,
+    )
 
     return {
         "success": True,

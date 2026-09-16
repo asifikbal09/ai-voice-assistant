@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     redis_url: str = ""
 
-    qdrant_url: str = ""
+    qdrant_url: str = "localhost:6333"
     qdrant_api_key: str = ""
     qdrant_collection: str = "premium_design_knowledge"
 

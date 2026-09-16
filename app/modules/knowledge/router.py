@@ -73,3 +73,22 @@ async def search(request: KnowledgeSearchRequest):
 @router.post("/search-debug")
 async def search_debug(request: KnowledgeSearchRequest):
     return debug_knowledge_search(request.query)
+
+
+@router.get("/stats")
+async def knowledge_stats():
+    client = get_qdrant_client()
+
+    collection = client.get_collection(
+        settings.qdrant_collection
+    )
+
+    return {
+        "success": True,
+        "collection": settings.qdrant_collection,
+        "vectors_count": collection.points_count,
+    }
+    
+@router.post("/sync")
+async def sync_knowledge():
+    return ingest_knowledge()
