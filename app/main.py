@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.modules.assistant.router import router as assistant_router
 from app.modules.knowledge.router import router as knowledge_router
-
+from app.modules.conversation.router import router as conversation_router
 
 app = FastAPI(
     title=settings.app_name,
@@ -23,6 +23,11 @@ app.add_middleware(
 
 app.include_router(
     assistant_router,
+    prefix=settings.api_prefix,
+)
+
+app.include_router(
+    conversation_router,
     prefix=settings.api_prefix,
 )
 

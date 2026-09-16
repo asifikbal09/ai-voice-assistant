@@ -3,7 +3,7 @@ from langchain_groq import ChatGroq
 from app.core.config import settings
 from app.modules.assistant.prompts import ASSISTANT_SYSTEM_PROMPT
 from app.modules.knowledge.retriever import get_relevant_documents
-
+from app.modules.conversation.memory import conversation_memory
 
 def get_llm() -> ChatGroq:
     if not settings.groq_api_key:
@@ -37,8 +37,16 @@ Source: {document.metadata.get("source")}
     return "\n\n---\n\n".join(context_parts)
 
 
-async def generate_ai_response(user_message: str) -> str:
+async def generate_ai_response(
+    user_message: str,
+    session_id: str,
+) -> str:
+
     llm = get_llm()
+
+    history = conversation_memory.get_history(
+        session_id
+    )
 
     documents = get_relevant_documents(
         user_message,
@@ -53,27 +61,63 @@ async def generate_ai_response(user_message: str) -> str:
 
     context = build_context(documents)
 
+    history_text = ""
+
+    for message in history:
+        history_text += (
+            f'{message["role"].capitalize()}: '
+            f'{message["content"]}\n'
+        )
+
     user_prompt = f"""
 Relevant company knowledge:
 
 {context}
 
-Customer question:
+Previous conversation:
+
+{history_text}
+
+Customer's latest question:
 
 {user_message}
 
 Instructions:
-- Answer using only the relevant company knowledge above.
-- Do not invent information.
-- If the knowledge does not contain the answer, clearly say that the information is unavailable.
+- Use the company knowledge above.
+- Use previous conversation to understand context.
+- If the customer uses words like "এটা", "ওটা", "this", "that",
+  understand what they are referring to from the conversation.
+- Do not invent company information.
+- If the knowledge does not contain the answer, clearly say
+  that the information is unavailable.
 - Reply naturally in the customer's language.
 """
 
     messages = [
-        ("system", ASSISTANT_SYSTEM_PROMPT),
-        ("human", user_prompt),
+        (
+            "system",
+            ASSISTANT_SYSTEM_PROMPT,
+        ),
+        (
+            "human",
+            user_prompt,
+        ),
     ]
 
     response = await llm.ainvoke(messages)
 
-    return response.content
+    answer = response.content
+
+    conversation_memory.add_message(
+        session_id=session_id,
+        role="user",
+        content=user_message,
+    )
+
+    conversation_memory.add_message(
+        session_id=session_id,
+        role="assistant",
+        content=answer,
+    )
+
+    return answer

@@ -10,6 +10,7 @@ from app.modules.knowledge.schemas import KnowledgeSearchRequest
 from app.modules.knowledge.retriever import get_relevant_documents
 
 from app.modules.knowledge.service import debug_knowledge_search
+from app.modules.knowledge.sync import sync_knowledge
 
 router = APIRouter(
     prefix="/knowledge",
@@ -90,5 +91,6 @@ async def knowledge_stats():
     }
     
 @router.post("/sync")
-async def sync_knowledge():
-    return ingest_knowledge()
+async def sync():
+    return sync_knowledge()
+
