@@ -4,6 +4,7 @@ from app.core.config import settings
 from app.modules.assistant.prompts import ASSISTANT_SYSTEM_PROMPT
 from app.modules.knowledge.retriever import get_relevant_documents
 from app.modules.conversation.memory import conversation_memory
+from app.modules.knowledge.query_rewriter import rewrite_query
 
 def get_llm() -> ChatGroq:
     if not settings.groq_api_key:
@@ -48,14 +49,19 @@ async def generate_ai_response(
         session_id
     )
 
+    search_query = await rewrite_query(
+    user_message=user_message,
+    history=history,
+    )
+
     documents = get_relevant_documents(
-        user_message,
+        search_query,
         k=4,
     )
 
     if not documents:
         return (
-            "দুঃখিত, এই বিষয়ে আমাদের কাছে বর্তমানে "
+            "দুঃখিত, এই বিষয়ে আমাদের কাছে বর্তমানে "
             "পর্যাপ্ত তথ্য নেই।"
         )
 

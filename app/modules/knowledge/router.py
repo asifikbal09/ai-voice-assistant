@@ -94,3 +94,32 @@ async def knowledge_stats():
 async def sync():
     return sync_knowledge()
 
+
+from pydantic import BaseModel, Field
+
+from app.modules.knowledge.query_rewriter import rewrite_query
+from app.modules.conversation.memory import conversation_memory
+
+
+class QueryRewriteRequest(BaseModel):
+    session_id: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1)
+
+
+@router.post("/rewrite-query")
+async def rewrite_search_query(request: QueryRewriteRequest):
+
+    history = conversation_memory.get_history(
+        request.session_id
+    )
+
+    rewritten_query = await rewrite_query(
+        user_message=request.message,
+        history=history,
+    )
+
+    return {
+        "success": True,
+        "original_query": request.message,
+        "rewritten_query": rewritten_query,
+    }
