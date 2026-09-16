@@ -6,7 +6,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "Premium Voice Assistant"
     app_env: str = "development"
-    debug: bool = True
 
     api_prefix: str = "/api/v1"
 
