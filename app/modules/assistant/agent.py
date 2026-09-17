@@ -41,13 +41,12 @@ Source: {document.metadata.get("source")}
 async def generate_ai_response(
     user_message: str,
     session_id: str,
+    history: list[dict],
 ) -> str:
 
     llm = get_llm()
 
-    history = conversation_memory.get_history(
-        session_id
-    )
+    
 
     search_query = await rewrite_query(
     user_message=user_message,
@@ -114,16 +113,5 @@ Instructions:
 
     answer = response.content
 
-    conversation_memory.add_message(
-        session_id=session_id,
-        role="user",
-        content=user_message,
-    )
-
-    conversation_memory.add_message(
-        session_id=session_id,
-        role="assistant",
-        content=answer,
-    )
 
     return answer

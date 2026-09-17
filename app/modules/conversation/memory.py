@@ -1,12 +1,12 @@
-from typing import Dict, List
+
 
 
 class ConversationMemory:
     def __init__(self, max_messages: int = 10):
         self.max_messages = max_messages
-        self.sessions: Dict[str, List[dict]] = {}
+        self.sessions: dict[str, list[dict]] = {}
 
-    def get_history(self, session_id: str) -> List[dict]:
+    def get_history(self, session_id: str) -> list[dict]:
         return self.sessions.get(session_id, [])
 
     def add_message(

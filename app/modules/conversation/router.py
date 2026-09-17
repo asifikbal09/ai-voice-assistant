@@ -5,16 +5,16 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.dependencies import get_db
+from app.modules.conversation.database_service import (
+    get_messages,
+    get_or_create_conversation,
+    save_message,
+)
 from app.modules.conversation.service import (
     clear_conversation,
     get_conversation_history,
 )
 from app.modules.conversation.shemas import ConversationHistoryResponse
-from app.modules.conversation.database_service import (
-    get_or_create_conversation,
-    save_message,
-    get_messages,
-)
 
 router = APIRouter(
     prefix="/conversation",
@@ -22,17 +22,27 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/{session_id}",
-    response_model=ConversationHistoryResponse,
-)
-async def conversation_history(session_id: str):
-    messages = get_conversation_history(session_id)
+@router.get("/{session_id}")
+async def conversation_history(
+    session_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+
+    messages = await get_conversation_history(
+        db=db,
+        session_id=session_id,
+    )
 
     return {
         "success": True,
         "session_id": session_id,
-        "messages": messages,
+        "messages": [
+            {
+                "role": message.role,
+                "content": message.content,
+            }
+            for message in messages
+        ],
     }
 
 

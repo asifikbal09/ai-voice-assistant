@@ -1,15 +1,14 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.conversation.models import Conversation
 from app.modules.conversation.message_model import ConversationMessage
+from app.modules.conversation.models import Conversation
 
 
 async def get_or_create_conversation(
     db: AsyncSession,
     session_id: str,
 ) -> Conversation:
-
     result = await db.execute(
         select(Conversation).where(
             Conversation.session_id == session_id
@@ -58,13 +57,12 @@ async def get_messages(
     db: AsyncSession,
     conversation: Conversation,
     limit: int = 10,
-):
+) -> list[ConversationMessage]:
 
     result = await db.execute(
         select(ConversationMessage)
         .where(
-            ConversationMessage.conversation_id
-            == conversation.id
+            ConversationMessage.conversation_id == conversation.id
         )
         .order_by(
             ConversationMessage.created_at.desc()
