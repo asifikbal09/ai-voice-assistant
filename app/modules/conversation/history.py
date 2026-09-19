@@ -1,16 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.conversation.database_service import (
-    get_or_create_conversation,
     get_messages,
+    get_or_create_conversation,
 )
+from app.modules.conversation.models import Conversation
 
 
 async def get_conversation_history_from_db(
     db: AsyncSession,
     session_id: str,
     limit: int = 10,
-) -> tuple[object, list[dict]]:
+) -> tuple[Conversation, list[dict]]:
 
     conversation = await get_or_create_conversation(
         db=db,

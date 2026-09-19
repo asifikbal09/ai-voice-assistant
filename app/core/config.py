@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     embedding_model: str = ""
 
     stt_provider: str = "groq"
+    stt_model: str = "whisper-large-v3-turbo"
 
     tts_provider: str = ""
     tts_api_key: str = ""

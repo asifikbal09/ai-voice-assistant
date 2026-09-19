@@ -8,6 +8,10 @@ from app.modules.conversation.history import (
     get_conversation_history_from_db,
 )
 
+from app.modules.conversation.database_service import (
+    save_message_pair,
+)
+
 
 async def chat(
     db: AsyncSession,
@@ -33,11 +37,11 @@ async def chat(
         content=message,
     )
 
-    await save_message(
+    await save_message_pair(
         db=db,
         conversation=conversation,
-        role="assistant",
-        content=response,
+        user_content=message,
+        assistant_content=response,
     )
 
     return {
