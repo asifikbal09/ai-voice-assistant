@@ -5,7 +5,7 @@ from app.core.config import settings
 from app.modules.assistant.router import router as assistant_router
 from app.modules.knowledge.router import router as knowledge_router
 from app.modules.conversation.router import router as conversation_router
-
+from app.modules.voice.router import router as voice_router
 app = FastAPI(
     title=settings.app_name,
     description="AI Voice Customer Assistant for Premium Design Consultancy",
@@ -34,6 +34,12 @@ app.include_router(
 app.include_router(
     knowledge_router,
     prefix=settings.api_prefix,
+)
+
+app.include_router(
+    voice_router,
+    prefix=f"{settings.api_prefix}/voice",
+    tags=["Voice"],
 )
 
 @app.get("/")
