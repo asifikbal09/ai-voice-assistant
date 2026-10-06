@@ -4,9 +4,8 @@ from tempfile import NamedTemporaryFile
 from fastapi import UploadFile
 
 from app.core.config import settings
-from app.modules.voice.providers.groq_whisper import (
-    GroqWhisperProvider,
-)
+from app.modules.voice.providers.groq_whisper import GroqWhisperProvider
+from app.modules.voice.normalizer.service import normalize_transcription
 
 
 async def transcribe_audio(
@@ -19,9 +18,7 @@ async def transcribe_audio(
             f"Unsupported STT provider: {settings.stt_provider}"
         )
 
-    suffix = Path(
-        audio.filename or ".webm"
-    ).suffix
+    suffix = Path(audio.filename or ".webm").suffix
 
     with NamedTemporaryFile(
         delete=False,
@@ -31,22 +28,19 @@ async def transcribe_audio(
         temp_path = temp_file.name
 
         while chunk := await audio.read(1024 * 1024):
-
             temp_file.write(chunk)
 
     try:
-
         provider = GroqWhisperProvider()
 
-        text = await provider.transcribe(
+        raw_text = await provider.transcribe(
             audio_path=temp_path,
             language=language,
         )
 
-        return text
+        normalized_text = await normalize_transcription(raw_text)
+
+        return normalized_text
 
     finally:
-
-        Path(temp_path).unlink(
-            missing_ok=True
-        )
+        Path(temp_path).unlink(missing_ok=True)
