@@ -26,8 +26,10 @@ class Settings(BaseSettings):
     stt_provider: str = "groq"
     stt_model: str = "whisper-large-v3-turbo"
 
-    tts_provider: str = ""
-    tts_api_key: str = ""
+    tts_provider: str = "edge"
+    tts_api_key: str = "sk_48123093c6f03df79e92f2b82de83138251f9a0fbb6cf800"
+    tts_voice_id: str = "3XjJ1C8taYP9CHnHKmK5"
+    edge_tts_voice: str = "bn-BD-NabanitaNeural"
 
     laravel_api_url: str = ""
     laravel_api_token: str = ""
